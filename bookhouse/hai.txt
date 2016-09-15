@@ -1,0 +1,3 @@
+<div style="font-size:150%;float:right;">
+<a href="usersignup.php">Signup</a>
+</div>

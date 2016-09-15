@@ -1,0 +1,14 @@
+<html>
+<body>
+<title>Adminstration Manage Books</title>
+
+
+<a href="adminmanageauthors.php">Authors<br><br></a>
+<a href="adminmanagepublishers.php">Publishers<br><br></a>
+<a href="adminmanagecategories.php">Categories<br><br></a>
+<a href="adminmanageusers.php">Users<br><br></a>
+<a href="adminmanagecountries.php">Countries</a>
+<a href="adminmanagecitystate.php">Cities</a>
+<a href="adminmanageauthors.php">Authors</a>
+<a href="adminmanagecustomers.php">Customers<br><br></a>
+<a href="adminmanagelogout.php">Logout<br><br></a>

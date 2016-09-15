@@ -1,0 +1,23 @@
+declare
+veno number(10);
+vjob varchar2(20);
+vsal varchar2(20);
+vname varchar2(15);
+begin
+ declare
+invalid_salary exception;
+begin
+select eno,ename,sal,job into veno,vename,vsal,vjob from emmpp where job='manager';
+if(vsal>15000) then
+invalid_salary exception;
+elsif vsal between 5000 and 10000 then
+update emmpp set sal=vsal+vsal*1.5 where vjob='manager';
+endif;
+exception
+when invalid_salary then
+dbms_output.put_line('salary cannot be less than 15000');
+end;
+exception
+when too_many_values then
+dbms_output.put_line('returns multiple rows');
+end;

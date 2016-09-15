@@ -1,0 +1,230 @@
+#read input file
+
+#data= read_excel("stk_dataset.xlsx");
+data= read_excel("stk_dataset.xlsx");
+##########################################normalization starts##################################
+
+for(i in 1:3)
+{
+ maxx=max(data[,i])
+ minn=min(data[,i])
+	 for(j in 1:109)
+	 {
+		 data[j,i]=(data[j,i])/(maxx)
+	 }
+ }
+ 
+ maxx=max(data[[5]])
+ minn=min(data[[5]])
+	 for(j in 1:109)
+	 {
+		 data[j,5]=(data[j,5])/(maxx)
+	 }
+ 
+######################normalization over#######################################
+#step2:
+l=4;
+m=30;
+n=1;
+
+#step3
+#input of hidden layer
+
+vo_matrix=matrix(,4,30);
+ for(i in 1:4){
+	for(j in 1:30){
+		vo_matrix[i,j]=runif(1,-1,1)
+		}
+	}
+
+
+wo_matrix=matrix(,30,1);
+for(i in 1:30){
+		wo_matrix[i,1]=runif(1,-1,1)
+	}
+
+
+alpha=0.4;
+eta=0.6;
+#initializing del v with zeros
+del_v_matrix=matrix(0,4,30);
+
+#initializing del w with zeros
+del_w_matrix=matrix(0,30,1);
+
+
+derived_op=c();
+totalerr=c()
+tol=0.2
+flag=0
+loop=0
+while(loop<=4000 && flag==0){
+
+derived_op=c()
+totalerr=c()
+for(row in  1:(length(data[[1]])-79)){
+	#step 4
+	Ii=data[row,]
+	
+	
+	#step 5
+	Oi=matrix(,(dim(Ii)[2]-1),1);#here -1 done to remove output 
+	for(i in seq(from=1,to=4,by=1))# this is changed to 3 bcz last col is output 
+	{
+		Oi[i]=Ii[[i]];
+	}
+	#step 6
+	Ih=matrix(dim(vo_matrix)[1],dim(Oi)[2]);
+	Ih=t(vo_matrix) %*% as.numeric(Oi);# here 5 hidden layers so 5 input to it
+	#step 7
+	Oh=matrix(,dim(vo_matrix)[2],dim(Oi)[2]);
+	for(i in 1:length(Ih))
+	{
+		Oh[i]=1/(1+exp(-Ih[i]));# here 5 hidden layer so 5 output from it
+	}
+	#step 8
+	Io=matrix(,dim(wo_matrix)[2],1);
+	Io=t(wo_matrix) %*% Oh;#here wo_matrix used
+	Oo=matrix(,dim(wo_matrix)[2],1);
+	#step 9
+	for(i in 1:length(Io))
+	{
+		Oo[i]=1/(1+exp(-Io[i]))
+	}
+	for(i in 1:length(Oo))
+	{
+		derived_op=c(derived_op,Oo[i]);
+	}
+	#step 10
+	T=Ii[[5]]#assigning the output
+	ep=0;
+	for(i in 1:length(Oo))
+	{
+		ep=ep+(T-Oo[i])^2;
+	}
+	ep=sqrt(ep)
+	totalerr=c(totalerr,ep)
+
+	#step 11
+	#jacobian construction 
+
+	jaco=matrix(,30,30)
+	lamda=0.4
+	for(i in 1:(length(data[[1]])-79)){
+		for (j in 1:dim(wo_matrix)[1]){
+			jaco[i,j]=-1*lamda*(T-Oo[1])*(Oo[1])*(1-Oo[1])
+		}
+	}
+	#step 12
+	if(ep<=tol){
+		print(ep)
+		print(tol)
+		flag=1
+	}
+	
+}
+
+
+
+Hessian=t(jaco)%*%jaco
+ 
+meu=1/alpha
+iden=matrix(,30,30)
+for(i in 1:30){
+	for(j in 1:30){
+		if(i==j){
+			iden[i,j]=1
+		} else{
+			iden[i,j]=0
+		}
+	}
+}
+
+part2=Hessian+(meu*iden)
+inverse_value=solve(part2)
+
+for(i in 1:30){
+	for(j in 1:30){
+		del_w_matrix[i,1]=	wo_matrix[i,1]-((inverse_value[i,j])%*%(jaco[i,j]*totalerr[i]))
+	}
+}
+	
+wo_matrix=del_w_matrix
+#v_tplus1=vo_matrix+(del_vtplus1);
+#vo_matrix=v_tplus1
+loop=loop+1
+}
+#########################################################
+
+no_wrng=0
+hit=0
+miss=0
+oup=c();
+t=c();
+for(row in 31:109){
+	#step 1
+	Ii=data[row,]
+	#step 2 
+	#l=3 m=5 n=1
+	#step 3 done outside loop
+	#step 4
+	Oi=matrix(,(dim(Ii)[2]-1),1);#here -1 done to remove output 
+	for(i in seq(from=1,to=4,by=1))# this is changed to 3 bcz last col is output 
+	{
+		Oi[i]=Ii[[i]];
+	}
+	#step 5
+	Ih=matrix(dim(vo_matrix)[1],dim(Oi)[2]);
+	Ih=t(vo_matrix) %*% as.numeric(Oi);# here 5 hidden layers so 5 input to it
+	#step 6
+	Oh=matrix(,dim(vo_matrix)[2],dim(Oi)[2]);
+	for(i in 1:length(Ih))
+	{
+		Oh[i]=1/(1+exp(-Ih[i]));# here 5 hidden layer so 5 output from it
+	}
+	#step 7
+	Io=matrix(,dim(wo_matrix)[2],1);
+	Io=t(wo_matrix) %*% Oh;#here wo_matrix used
+	Oo=matrix(,dim(wo_matrix)[2],1);
+	#step 8
+	for(i in 1:length(Io))
+	{
+		Oo[i]=1/(1+exp(-Io[i]))
+	}
+	T=Ii[[5]]#assigning the output
+	#value=Oo*(maxo-mino)+mino
+	#print(round(abs(T-Oo),2))
+	oup=c(oup,Oo/10);
+	t=c(t,T)
+	
+	
+}	
+dum=c();
+for(g in 1:length(oup))
+{
+	dum[g]=oup[g]-t[g];
+}
+for(h in 1:length(oup))
+{
+	
+	if ( (oup[h]-t[h])>=min(dum) && ((oup[h]-t[h])<=mean(dum)) )
+	{
+		#print("in else")
+		hit=hit+1;
+	}
+	else if((oup[h]) != t[h])
+	{
+	
+		miss=miss+1;
+		#print("computed")
+		#print(oup[h])
+		#print("actual")
+		#print(t[h])
+	}
+
+}
+
+
+#accuracy code
+acc=hit/(109-30)*100
+
